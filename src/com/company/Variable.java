@@ -5,7 +5,7 @@ public class Variable {
   private String name;
   private int value;
 
-  public Variable (String name) {
+  public Variable(String name) {
     this.name = name;
   }
 

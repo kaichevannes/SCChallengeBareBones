@@ -21,7 +21,8 @@ public class Main {
     String[] instructionArray = getInstructionArray(filename);
     System.out.println(Arrays.toString(instructionArray));
     List<Variable> variableList = new ArrayList<>();
-    // This is not assigned to a variable since the output is only required for while loop recursion.
+    // This is not assigned to a variable since the output is only required for while loop
+    // recursion.
     executeProgram(instructionArray, variableList, 0);
     System.out.println("*****************************************");
     System.out.println("    Outputting final variable values.    ");
@@ -35,14 +36,13 @@ public class Main {
   /**
    * Executes program and returns variable values.
    *
-   *
    * @param instructionArray String array of instructions.
    * @param variableList list of all variables in the current program.
    * @param startIndex index to start execution on.
-   * @return -1 if the program has terminated.
-   *         index of the current end statement otherwise.
+   * @return -1 if the program has terminated. index of the current end statement otherwise.
    */
-  static int executeProgram(String[] instructionArray, List<Variable> variableList, int startIndex) {
+  static int executeProgram(
+      String[] instructionArray, List<Variable> variableList, int startIndex) {
     String variableName;
 
     String clearRegex = "(?<=clear )(.*)";
@@ -83,8 +83,10 @@ public class Main {
         Variable currentVariable = getVariableFromName(variableName, variableList);
         // Recursively call executeProgram.
         while (currentVariable.getValue() != 0) {
-          System.out.printf("While Loop: Variable %s value = %d.\n",currentVariable.getName(), currentVariable.getValue());
-          endIndex = executeProgram(instructionArray, variableList, i+1);
+          System.out.printf(
+              "While Loop: Variable %s value = %d.\n",
+              currentVariable.getName(), currentVariable.getValue());
+          endIndex = executeProgram(instructionArray, variableList, i + 1);
         }
         // Go to the next instruction after the while loop.
         i = endIndex;

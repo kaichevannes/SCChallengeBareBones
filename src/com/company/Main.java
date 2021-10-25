@@ -20,16 +20,17 @@ public class Main {
     String filename = "multiply.txt";
     String[] instructionArray = getInstructionArray(filename);
     System.out.println(Arrays.toString(instructionArray));
-    List<Variable> variableList = new ArrayList<>();
+    Map<String, Variable> variableMap = new HashMap<>();
     // This is not assigned to a variable since the output is only required for while loop
     // recursion.
-    executeProgram(instructionArray, variableList, 0);
+    executeProgram(instructionArray, variableMap, 0);
     System.out.println("*****************************************");
     System.out.println("    Outputting final variable values.    ");
     System.out.println("*****************************************");
-    for (Variable variable : variableList) {
+
+    for (Map.Entry<String, Variable> entry : variableMap.entrySet()) {
       System.out.printf(
-          "Variable name: %s | Variable value: %d\n", variable.getName(), variable.getValue());
+              "Variable name: %s | Variable value: %d\n", entry.getKey(), entry.getValue().getValue());
     }
   }
 
@@ -37,12 +38,12 @@ public class Main {
    * Executes program and returns variable values.
    *
    * @param instructionArray String array of instructions.
-   * @param variableList list of all variables in the current program.
+   * @param variableMap map of all variable names to variable objects in the current program.
    * @param startIndex index to start execution on.
    * @return -1 if the program has terminated. index of the current end statement otherwise.
    */
   static int executeProgram(
-      String[] instructionArray, List<Variable> variableList, int startIndex) {
+      String[] instructionArray, Map<String, Variable> variableMap, int startIndex) {
     String variableName;
 
     String clearRegex = "(?<=clear )(.*)";
@@ -70,23 +71,23 @@ public class Main {
       // Match keyword and get associated variable.
       if (clearMatcher.find()) {
         variableName = clearMatcher.group();
-        clearVariable(variableName, variableList);
+        clearVariable(variableName, variableMap);
       } else if (incrMatcher.find()) {
         variableName = incrMatcher.group();
-        incrementVariable(variableName, variableList);
+        incrementVariable(variableName, variableMap);
       } else if (decrMatcher.find()) {
         variableName = decrMatcher.group();
-        decrementVariable(variableName, variableList);
+        decrementVariable(variableName, variableMap);
       } else if (whileMatcher.find()) {
         variableName = whileMatcher.group();
         int endIndex = -1;
-        Variable currentVariable = getVariableFromName(variableName, variableList);
+        Variable currentVariable = variableMap.get(variableName);
         // Recursively call executeProgram.
         while (currentVariable.getValue() != 0) {
           System.out.printf(
               "While Loop: Variable %s value = %d.\n",
               currentVariable.getName(), currentVariable.getValue());
-          endIndex = executeProgram(instructionArray, variableList, i + 1);
+          endIndex = executeProgram(instructionArray, variableMap, i + 1);
         }
         // Go to the next instruction after the while loop.
         i = endIndex;
@@ -108,10 +109,10 @@ public class Main {
    * Clears the variable given, settings its value to 0 and creating it if it does not exist.
    *
    * @param variableName name of the variable to clear.
-   * @param variableList list of all variables in the current program.
+   * @param variableMap map of all variable names to Variable objects in the current program.
    */
-  static void clearVariable(String variableName, List<Variable> variableList) {
-    Variable currentVariable = getVariableFromName(variableName, variableList);
+  static void clearVariable(String variableName, Map<String, Variable> variableMap) {
+    Variable currentVariable = variableMap.get(variableName);
 
     if (currentVariable != null) {
       System.out.printf("Variable %s exists.\n", variableName);
@@ -124,7 +125,7 @@ public class Main {
       System.out.printf("Clearing variable %s.\n", variableName);
       newVar.clear();
       // This reflects the other variableList since both point to the same data in the heap.
-      variableList.add(newVar);
+      variableMap.put(variableName, newVar);
     }
   }
 
@@ -132,11 +133,11 @@ public class Main {
    * Increment given variable from the list.
    *
    * @param variableName the name of the variable to increment.
-   * @param variableList the list of all variables in the current program.
+   * @param variableMap the map of all variable names to Variable object in the current program.
    */
-  static void incrementVariable(String variableName, List<Variable> variableList) {
+  static void incrementVariable(String variableName, Map<String, Variable> variableMap) {
     // currentVariable will never return null in a well formatted program.
-    Variable currentVariable = getVariableFromName(variableName, variableList);
+    Variable currentVariable = variableMap.get(variableName);
     System.out.printf("Incrementing variable %s.\n", variableName);
     assert currentVariable != null;
     currentVariable.incr();
@@ -147,31 +148,15 @@ public class Main {
    * Decrement given variable from the list.
    *
    * @param variableName the name of the variable to decrement.
-   * @param variableList the list of all variables in the current program.
+   * @param variableMap the map of all variables names to Variable objects in the current program.
    */
-  static void decrementVariable(String variableName, List<Variable> variableList) {
+  static void decrementVariable(String variableName, Map<String, Variable> variableMap) {
     // currentVariable will never return null in a well formatted program.
-    Variable currentVariable = getVariableFromName(variableName, variableList);
+    Variable currentVariable = variableMap.get(variableName);
     System.out.printf("Decrementing variable %s.\n", variableName);
     assert currentVariable != null;
     currentVariable.decr();
     System.out.printf("Variable %s value is now %d.\n", variableName, currentVariable.getValue());
-  }
-
-  /**
-   * Gets the associates variable from the given variable name and variable list.
-   *
-   * @param variableName name of the variable to match.
-   * @param variableList list of all variables in the current program.
-   * @return Variable object if it exists; null if it does not.
-   */
-  static Variable getVariableFromName(String variableName, List<Variable> variableList) {
-    for (Variable variable : variableList) {
-      if (variable.getName().equals(variableName)) {
-        return variable;
-      }
-    }
-    return null;
   }
 
   /**
